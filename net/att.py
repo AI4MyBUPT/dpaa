@@ -5,7 +5,7 @@ import torch.nn as nn
 class DualCrossAttention(nn.Module):
     def __init__(self, channels, reduction_ratio=8):
         super().__init__()
-        # 通道压缩
+
         self.channels_compressed = max(channels // reduction_ratio, 4)
         
         # 分支A到分支B的注意力路径
@@ -17,8 +17,7 @@ class DualCrossAttention(nn.Module):
         self.B2A_query = nn.Conv2d(channels, self.channels_compressed, kernel_size=1)
         self.B2A_key = nn.Conv2d(channels, self.channels_compressed, kernel_size=1)
         self.B2A_value = nn.Conv2d(channels, channels, kernel_size=1)
-        
-        # 自适应权重
+
         self.gamma_A = nn.Parameter(torch.zeros(1))
         self.gamma_B = nn.Parameter(torch.zeros(1))
         
