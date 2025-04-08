@@ -170,9 +170,12 @@ class My_UNet3d(nn.Module):
         branch1_x2 = self.branch1_enc1(branch1_x1)
         branch1_x3 = self.branch1_enc2(branch1_x2)
 
+        branch1_x2 = self.branch1_enc1(branch1_x1)
+        x2= self.dual_cross_attn1(x2, branch1_x2) 
 
-        x2 = x2 + branch1_x2 * 0.5
-        x5 = x5 + branch1_x3 * 0.5
+
+        branch1_x3 = self.branch1_enc2(branch1_x2)
+        x4 = self.dual_cross_attn2(x4, branch1_x3)
 
         patch_features = self.patch_extractor(x)  
   
