@@ -159,12 +159,6 @@ class My_UNet3d(nn.Module):
 
         att = self.dpaa_builder(x,x2)
 
-        x3 = self.enc2(x2)
-        x4 = self.enc3(x3)
-        x5 = self.enc4(x4)
-        x6 = self.enc5(x5)
-
-
         branch1_x1 = self.branch1_conv(x)
         branch1_x2 = self.branch1_enc1(branch1_x1)
         branch1_x3 = self.branch1_enc2(branch1_x2)
@@ -172,12 +166,17 @@ class My_UNet3d(nn.Module):
         branch1_x2 = self.branch1_enc1(branch1_x1)
         x2= self.dual_cross_attn1(x2, branch1_x2) 
 
+        x3 = self.enc2(x2)
+        x4 = self.enc3(x3)
 
         branch1_x3 = self.branch1_enc2(branch1_x2)
         x4 = self.dual_cross_attn2(x4, branch1_x3)
 
         patch_features = self.patch_extractor(x)  
-  
+
+        x5 = self.enc4(x4)
+        x6 = self.enc5(x5)
+
         # 解码器部分
         mask = self.dec0(x6,x5)
         mask = self.dec1(mask, x4)
