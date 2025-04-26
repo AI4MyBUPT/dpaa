@@ -9,23 +9,38 @@
 ## Data
 * [LiTS](https://www.kaggle.com/andrewmvd/liver-tumor-segmentation) 130 CT scans for segmentation of the liver as well as tumor lesions.
 
+## Installation
+```bash
+git clone https://github.com/AI4MyBUPT/dpaa.git
+cd dpaa 
+pip install -r requirements.txt
+```
 
-# model
-The My_UNet2d model consists of the following components:
+# Model 
 
-Encoder (Downsampling):
-Uses a series of convolutional layers (DoubleConv) and max-pooling operations (Down) to extract hierarchical features.
-Includes two branches:
-Branch 1: Captures high-resolution global information through fewer downsampling steps.
+## Model structure
+
+Uses a series of convolutional layers (DoubleConv) and max-pooling operations (Down) to extract hierarchical features 
+
+Branch 1: Captures high-resolution global information through fewer downsampling steps.  
+
 Branch 2: Extracts patch-level features using a convolutional layer with a large stride.
-Decoder (Upsampling):
-Uses upsampling layers (Up) and skip connections to reconstruct the segmentation mask.
-Combines features from both branches for better localization and detail preservation.
-Attention Mechanism:
-Implements the DPAA module to compute attention weights and refine the segmentation output.
-Output Layer:
-Produces the final segmentation mask using a 1x1 convolutional layer (Out).
+
+<p align="center"><img width="100%" src="figures/net.png" /></p>
+
+## DPAA Attention Mechanism
+
+The DPAA (Dynamic Patch-Aware Attention) module is designed to compute attention weights by dynamically assessing the similarity between image patches and shallow layer features. 
+
+This process allows for the explicit modeling of the importance weights of different image regions, thereby highlighting the most relevant areas for the task at hand.
+
+By emphasizing these critical regions, DPAA enhances the model's decision-making capabilities, leading to more accurate and refined segmentation outputs. The mechanism effectively integrates local details with global context, ensuring 
+
+that the model can make more informed predictions while preserving important details and boundaries.
+
+<p align="center"><img width="100%" src="figures/dpaa.png" /></p>
 
 ## Run the codes
-train: python train.py
+```bash
+train: python train.py 
 validate: python val.py
