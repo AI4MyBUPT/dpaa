@@ -171,23 +171,19 @@ def load_model_and_test(args, model_path, val_loader, criterion):
         val_loader (DataLoader): 验证集的数据加载器。
         criterion: 损失函数。
     """
-    # 创建模型实例
     model = UNet2D.My_UNet2d(in_channels=3, n_classes=1, n_channels=64)  # 替换为你的模型类
     model = torch.nn.DataParallel(model).cuda()  # 使用多 GPU（如果可用）
 
-    # 加载模型权重
     checkpoint = torch.load(model_path)
 
     model.load_state_dict(checkpoint)  # 加载模型权重
     print(f"成功加载模型权重: {model_path}")
 
-    # 切换到评估模式
     model.eval()
 
-    # 进行测试
     log = validate(args, val_loader, model, criterion)
 
-    # 打印测试结果
+
     print("测试结果:")
     for key, value in log.items():
         print(f"{key}: {value:.4f}")
@@ -195,22 +191,19 @@ def load_model_and_test(args, model_path, val_loader, criterion):
     return log
 
 
-# 示例用法
 if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = '1'
     args = parse_args()
-    # 假设你已经定义了 args、val_loader 和 criterion
+
 
     val_img_paths = sorted(glob('/data/yike/G/Dataset/ISIC2018_Task1-2_Validation_Input/*.jpg'))
     val_mask_paths = sorted(glob('/data/yike/G/Dataset/ISIC2018_Task1_Validation_GroundTruth/*.png'))
 
-    val_dataset = Dataset2D(args, val_img_paths, val_mask_paths,val=True)  # 验证集数据集
+    val_dataset = Dataset2D(args, val_img_paths, val_mask_paths,val=True)  
 
-    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)  # 验证集数据加载器
+    val_loader = DataLoader(val_dataset, batch_size=16, shuffle=False)  
 
-    criterion = losses.BCEDiceLoss().cuda()  # 损失函数
-
-    # 模型权重路径
+    criterion = losses.BCEDiceLoss().cuda()  
     model_path = "/data/yike/G/LITS2017-main2-master/models/LITS_UNet_lym/0216UNet(me_ISIC18)/epoch74-0.8651_model.pth"
 
     # 加载模型并测试

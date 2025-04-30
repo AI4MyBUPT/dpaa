@@ -82,19 +82,15 @@ def parse_args():
 
 def load_model_and_test(args, model_path, val_loader):
     """
-    加载训练好的模型权重并进行测试。
-
     参数:
         args: 命令行参数或配置对象。
         model_path (str): 训练好的模型权重文件路径。
         val_loader (DataLoader): 验证集的数据加载器。
         criterion: 损失函数。
     """
-    # 创建模型实例
     model = UNet2D.My_UNet2d(in_channels=3, n_classes=1, n_channels=64)  # 替换为你的模型类
     model = torch.nn.DataParallel(model).cuda()  # 使用多 GPU（如果可用）
 
-    # 加载模型权重
     checkpoint = torch.load(model_path)
 
     model.load_state_dict(checkpoint)  # 加载模型权重
@@ -108,7 +104,6 @@ def load_model_and_test(args, model_path, val_loader):
 if __name__ == "__main__":
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     args = parse_args()
-    # 假设你已经定义了 args、val_loader 和 criterion
 
     val_img_paths = sorted(glob('/data/yike/G/Dataset/ISIC2018_Task1-2_Validation_Input/*.jpg'))
     val_mask_paths = sorted(glob('/data/yike/G/Dataset/ISIC2018_Task1_Validation_GroundTruth/*.png'))
@@ -116,11 +111,8 @@ if __name__ == "__main__":
     val_dataset = Dataset2D(args, val_img_paths, val_mask_paths,val=True)  # 验证集数据集
     val_loader = DataLoader(val_dataset, batch_size=1, shuffle=False)  # 验证集数据加载器
 
-
-    # 模型权重路径
     model_path = "/data/yike/G/LITS2017-main2-master/models/LITS_UNet_lym/0216UNet(me_ISIC18)/epoch61-0.8529_model.pth"
     model = load_model_and_test(args, model_path, val_loader)
-    # 加载模型并测试
     output_dir = "./ISIC_visualization_results/"  # 保存结果的文件夹
     os.makedirs(output_dir, exist_ok=True)
 
@@ -129,29 +121,25 @@ if __name__ == "__main__":
         target = target.cuda()
         output, att, correction = model(input)  # correction: [B, 3, H, W]
 
-        # 假设只可视化 Batch 中第一个样本
         vis_input = input[0].detach().cpu().numpy()  # [3, H, W]
         vis_correction = correction[0].detach().cpu().numpy()  # [3, H, W]
 
-        # 将 correction 转为单通道 (取平均值，也可以选择其中一个通道)
+
         correction_heatmap = np.mean(vis_correction, axis=0)  # [H, W]
 
-        # 调整输入图像（归一化到 [0, 255]，并转为 HWC 格式）
+
         vis_input = np.transpose(vis_input, (1, 2, 0))  # [H, W, 3]
         vis_input = (vis_input - vis_input.min()) / (vis_input.max() - vis_input.min())  # 归一化到 [0, 1]
         vis_input = (vis_input * 255).astype(np.uint8)  # 转为 [0, 255]
-        
-        # 处理 correction_heatmap，将其归一化到 [0, 255]
+
         correction_heatmap = (correction_heatmap - correction_heatmap.min()) / (correction_heatmap.max() - correction_heatmap.min())
         correction_heatmap = (correction_heatmap * 255).astype(np.uint8)  # 转为 [0, 255]
 
-        # 使用伪彩色（Jet colormap）可视化热力图
+
         correction_heatmap_color = cv2.applyColorMap(correction_heatmap, cv2.COLORMAP_JET)  # 伪彩色
 
-        # 将热力图叠加到输入图像上
         overlay = cv2.addWeighted(vis_input, 0.6, correction_heatmap_color, 0.4, 0)
 
-        # 保存图像
         Image.fromarray(vis_input).save(os.path.join(output_dir, f'original_{i}.png'))  # 保存原始输入图像
         Image.fromarray(correction_heatmap_color).save(os.path.join(output_dir, f'heatmap_{i}.png'))  # 保存热力图
         Image.fromarray(overlay).save(os.path.join(output_dir, f'overlay_{i}.png'))  # 保存叠加图
